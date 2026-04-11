@@ -1,0 +1,66 @@
+{% extends 'dashboard.html' %}
+{% load static %}
+
+{% block content %} 
+<!-- Students Table -->
+<div class="row">
+  <div class="col-12">
+    <form action="{% url 'enrollment_create' %}" method="post">
+       {% csrf_token %}
+    <div class="card mb-4">
+      <div class="card-header pb-0">
+        <h6>List of Enrollee Students</h6>
+      </div>
+      <div class="card-body px-0 pt-0 pb-2">
+        <div class="table-responsive p-0">
+          <table class="table align-items-center mb-0">
+            <thead>
+              <tr>
+                <th>Fullname</th>
+                <th>Gender</th>
+                <th>Age</th>
+                <th>Grade & Section</th>
+                <th>Grade</th>
+              </tr>
+            </thead>
+            <tbody>
+              
+            {% for i in students %}
+                  <tr>
+                    <td>{{ i.student.last_name }}, {{ i.student.first_name }} {{ i.student.middle_name }} {{ i.student.ext_name }}</td>
+                    <td>{{ i.student.gender }}</td>
+                    <td>{{ i.student.age }}</td>
+                    <td>Grade {{ i.section.grade_level.grade_no }} - {{ i.section.section_name }}</td>
+                    <td>{{ i.grade}}</td>
+                  </tr>
+              {% empty %}
+                <tr>
+                  <td colspan="6"><center><font color="red">No students Enrolled yet in this section.</font></center></td>
+                </tr>
+              {% endfor %}
+
+            </tbody> 
+          </table>
+        </div>
+        <hr>
+    
+      </div>
+      <br>
+    
+    </div>
+  </div>
+</div>
+</form>
+<!-- jQuery first -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<!-- Select2 CSS & JS -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script>
+document.getElementById("select_all").addEventListener("change", function() {
+    let checkboxes = document.querySelectorAll(".row_checkbox");
+    checkboxes.forEach(cb => cb.checked = this.checked);
+});
+</script>
+{% endblock %}

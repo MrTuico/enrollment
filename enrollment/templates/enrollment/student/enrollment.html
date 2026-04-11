@@ -1,0 +1,233 @@
+{% extends 'dashboard.html' %}
+{% load static %}
+
+{% block content %} 
+
+<div class="row">
+  <div>
+    <button class="btn btn-primary float-end" data-bs-toggle="modal" data-bs-target="#enrollmentModal">
+       Add Enrollee
+    </button>
+    
+  </div>
+</div>
+
+<!-- Students Table -->
+<div class="row">
+  <form method="GET">
+  <div class="row mb-3">
+    <div class="col-3">
+     <select name="status" class="form-select" id="statusSelect">
+    {% for value, label in status_choices %}
+        <option value="{{ value }}"
+            {% if request.GET.status == value %}selected{% endif %}>
+            {{ label }}
+        </option>
+    {% endfor %}
+</select>
+  </div>
+  <div class="col-3" id="glField">
+      <select name="gl" class="form-select form-control" title="Previous Grade">
+       {% for grade in grade_levels %}
+        <option value="{{ grade }}"
+            {% if gl == grade|stringformat:"s" %}selected{% endif %}>
+            {{ grade }}
+        </option>
+    {% endfor %}
+      </select>
+  </div>
+
+  <div class="col-3" id="secField">
+      <select name="sec" class="form-select form-control" title="Section">
+       {% for j in sec %}
+        <option value="{{ j.section_id }}">
+            {{ j.grade_level }} - {{ j.section_name }}
+        </option>
+    {% endfor %}
+      </select>
+  </div>
+   
+   <div class="col-3">
+          <select name="school_year" class="form-select">
+            {% for value, label in year_choices %}
+                <option value="{{ value }}"
+                    {% if value == current_school_year %}selected{% endif %}>
+                    {{ label }}
+                </option>
+            {% endfor %}
+        </select>
+        </div>
+   <div class="col-2">
+      <button class="btn btn-primary">Seach</button>
+  </div>
+</div>
+</form>
+  <div class="col-12">
+    <form action="{% url 'enrollment_create' %}" method="post">
+       {% csrf_token %}
+    <div class="card mb-4">
+      <div class="card-header pb-0">
+        <h6>List of Enrollee Students</h6>
+      </div>
+      <div class="card-body px-0 pt-0 pb-2">
+        <div class="table-responsive p-0">
+          <table class="table align-items-center mb-0">
+            <thead>
+              <tr>
+                <th>Fullname</th>
+                <th>Gender</th>
+                <th>Age</th>
+                <th>Previous Grade</th>
+                <th>Grade & Section</th>
+                <th>Grade</th>
+                <th>
+                  <center>
+                    Select All &nbsp;<input type="checkbox" id="select_all">
+                  </center>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              
+            {% for i in students %}
+                  <tr>
+                    <td>{{ i.student }}</td>
+                    <td>{{ i.student.gender }}</td>
+                    <td>{{ i.student.age }}</td>
+                    <td>Grade {{ i.prev_grade }}</td>
+                    <td>Grade {{ i.section.grade_level.grade_no }} - {{ i.section.section_name }}</td>
+                    <td>{{ i.grade}}</td>
+                    <td> <center>
+                      {% if i.section %}
+                      <span class="btn btn-success">ENROLLED</span>
+                      {% else %}
+                     <input type="checkbox" class="row_checkbox" name="e_id[]" value="{{ i.enrollment_id }}">
+                      {% endif %}
+                      </center>
+                    </td>
+                  </tr>
+              {% empty %}
+                <tr>
+                  <td colspan="6"><center><font color="red">No students found for this grade.</font></center></td>
+                </tr>
+              {% endfor %}
+
+            </tbody> 
+          </table>
+        </div>
+        <hr>
+    
+      </div>
+      <br>
+          <div class="row m-2">
+          <div class="col-3">
+              <select name="gle" class="form-select form-control" title="Previous Grade">
+                {% for s in sec %}
+                  <option value="{{ s.section_id }}">{{ s.grade_level }} - {{ s.section_name }}
+                  </option>
+              {% endfor %}
+                </select>
+          </div>
+          <div class="col-3">
+            <select name="e_school_year" class="form-select">
+            {% for value, label in year_choices %}
+                <option value="{{ value }}"
+                    {% if value == current_school_year %}selected{% endif %}>
+                    {{ label }}
+                </option>
+            {% endfor %}
+        </select>
+          </div>
+          <div class="col-3">
+            <button type="submit"  name="enroll_button" class="btn btn-success">ENROLLED STUDENT</button>
+          </div>
+        </div>
+        <br>
+    </div>
+  </div>
+</div>
+</form>
+<!-- Student Modal -->
+<div class="modal fade {% if form.errors %}show d-block{% endif %}" id="enrollmentModal" tabindex="1">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Add Enrollee</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body">
+        <form method="POST" action="{% url 'enrollment_create' %}">
+          {% csrf_token %}
+          {{ form.as_p }}
+          {% if form.errors %}
+            <div class="alert alert-danger">{{ form.errors }}</div>
+          {% endif %}
+
+         
+
+          <div class="mt-3">
+            <button type="submit" name="add_enrollee" class="btn btn-success">Save</button>
+            <a href="{% url 'enrollment_create' %}" class="btn btn-secondary">Close</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- jQuery first -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<!-- Select2 CSS & JS -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script>
+document.getElementById("select_all").addEventListener("change", function() {
+    let checkboxes = document.querySelectorAll(".row_checkbox");
+    checkboxes.forEach(cb => cb.checked = this.checked);
+});
+</script>
+<script>
+$(document).ready(function() {
+    $('#enrollmentModal').on('shown.bs.modal', function () {
+        let studentField = $('#id_student');
+        if (!studentField.hasClass("select2-hidden-accessible")) {
+            studentField.select2({
+                dropdownParent: $('#enrollmentModal'),
+                width: '100%',
+                placeholder: 'Select a student',
+                minimumInputLength: 3
+            });
+        }
+    });
+});
+</script>
+
+<script>
+function toggleFields() {
+    let status = document.getElementById("statusSelect").value;
+    let glField = document.getElementById("glField");
+    let secField = document.getElementById("secField");
+
+    if (status === "enrollee") {
+        glField.style.display = "block";
+        secField.style.display = "none";
+    } else if (status === "enrolled") {
+        glField.style.display = "none";
+        secField.style.display = "block";
+    } else {
+        glField.style.display = "none";
+        secField.style.display = "none";
+    }
+}
+
+// run on page load
+document.addEventListener("DOMContentLoaded", function() {
+    toggleFields();
+});
+
+// run when changed
+document.getElementById("statusSelect").addEventListener("change", toggleFields);
+</script>
+{% endblock %}

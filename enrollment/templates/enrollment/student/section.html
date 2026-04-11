@@ -1,0 +1,111 @@
+{% extends 'dashboard.html' %}
+{% load static %}
+
+{% block content %} 
+
+<div class="row">
+  <div>
+    <button class="btn btn-primary float-end" data-bs-toggle="modal" data-bs-target="#sectionModal">
+       Add Section
+    </button>
+    
+  </div>
+</div>
+
+<!-- Students Table -->
+<div class="row">
+  <div class="col-12">
+    <div class="card mb-4">
+      <div class="card-header pb-0">
+        <h6>List of Section</h6>
+      </div>
+      <div class="card-body px-0 pt-0 pb-2">
+        <div class="table-responsive p-0">
+          <table class="table align-items-center mb-0">
+            <thead>
+              <tr>
+                <th>Section</th>
+                <th>Instructor</th>
+                <th>Grade Level</th>
+                <th>Room</th>
+                <th><center>Action</center></th>
+              </tr>
+            </thead>
+            <tbody>
+              
+            {% for i in sec %}
+                  <tr>
+                    <td>{{ i.section_name }}</td>
+                    <td>{{ i.instructor }}</td>
+                    <td>Grade {{ i.grade_level.grade_no }}</td>
+                    <td>{{ i.room }}</td>
+                    <td>
+                      <center><a href="{% url 'section_student_list' i.section_id%}" class="btn btn-primary">view</a></center>
+                    </td>
+                  </tr>
+              {% empty %}
+                <tr>
+                  <td colspan="6"><center><font color="red">No students found for this grade.</font></center></td>
+                </tr>
+              {% endfor %}
+          
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Student Modal -->
+<div class="modal fade {% if form.errors %}show d-block{% endif %}" id="sectionModal" tabindex="1">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Add Section</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body">
+        <form method="POST" action="{% url 'section_view' %}">
+          {% csrf_token %}
+          {{ form.as_p }}
+          {% if form.errors %}
+            <div class="alert alert-danger">{{ form.errors }}</div>
+          {% endif %}
+
+         
+
+          <div class="mt-3">
+            <button type="submit" class="btn btn-success">Save</button>
+            <a href="{% url 'section_view' %}" class="btn btn-secondary">Close</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- jQuery first -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<!-- Select2 CSS & JS -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+<script>
+$(document).ready(function() {
+    $('#enrollmentModal').on('shown.bs.modal', function () {
+        let studentField = $('#id_student');
+        if (!studentField.hasClass("select2-hidden-accessible")) {
+            studentField.select2({
+                dropdownParent: $('#enrollmentModal'),
+                width: '100%',
+                placeholder: 'Select a student',
+                minimumInputLength: 3
+            });
+        }
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+ {% include 'includes/header_scripts.html' %}
+</head>
+{% if messages %}
+  {% for message in messages %}
+    <div class="alert alert-{{ message.tags|default:'success' }}" style="z-index: 999999;" id="alert-{{ forloop.counter }}">
+      {{ message }}
+    </div>
+  {% endfor %}
+{% endif %}
+<body class="g-sidenav-show   bg-gray-100">
+  <div class="min-height-300 bg-dark position-absolute w-100"></div>
+   {% include 'includes/navigation.html' %}
+  <main class="main-content position-relative border-radius-lg ">
+    <!-- Navbar -->
+    {% include 'includes/nav_top.html' %}
+    <!-- End Navbar -->
+    <div class="container-fluid py-4">
+      
+      {% block content %}
+         
+      {% endblock %}
+        
+
+            {% include 'includes/footer.html' %}
+    </div>
+  </main>
+  {% include 'includes/settings.html' %}
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    let counter = 1;
+    while(true) {
+        let el = document.getElementById("alert-" + counter);
+        if (!el) break; // stop when no more alerts
+        setTimeout(function(el) {
+            return function() {
+                el.style.transition = "opacity 0.5s ease";
+                el.style.opacity = 0;
+                setTimeout(function(){ el.remove(); }, 500);
+            };
+        }(el), 3000);
+        counter++;
+    }
+});
+</script>
+</body>
+
+</html>
