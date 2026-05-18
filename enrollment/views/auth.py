@@ -2,6 +2,8 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.contrib.auth.models import User
+from enrollment.forms import TeacherForm
+from django.db import transaction
 
 def login_view(request):
     if request.method == "POST":
@@ -19,8 +21,15 @@ def login_view(request):
 
     return render(request, "sign-in.html")
 
+from django.contrib import messages
+from django.contrib.auth.models import User
+from django.db import transaction
+from django.shortcuts import render, redirect
+
 def registration(request):
     if request.method == "POST":
+        form = TeacherForm(request.POST)
+
         username = request.POST.get('username')
         email = request.POST.get('email')
         password = request.POST.get('password')
@@ -33,13 +42,29 @@ def registration(request):
             messages.error(request, "Email already used")
             return redirect('registration')
 
-        user = User.objects.create_user(username=username,email=email,password=password)
-        user.save()
+        if form.is_valid():
+            try:
+                with transaction.atomic():
 
-        messages.success(request, "Account created successfully!")
-        return redirect('/login')
+                    # 1. create user
+                    user = User.objects.create_user(username=username,email=email,password=password)
+                    instructor = form.save(commit=False)
+                    instructor.user = user
+                    instructor.save()
 
-    return render(request, 'sign-up.html')
+                    messages.success(request, "Teacher successfully registered")
+                    return redirect('/login')
+
+            except Exception as e:
+                messages.error(request, f"Error: {str(e)}")
+
+        else:
+            messages.error(request, "Please correct the errors below")
+
+    else:
+        form = TeacherForm()
+
+    return render(request, 'sign-up.html', {'form': form})
 
 def sign_out(request):
 

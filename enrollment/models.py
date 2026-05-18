@@ -2,6 +2,7 @@ from django.db import models
 import uuid
 from datetime import date
 from django.utils import timezone
+from django.contrib.auth.models import User
 
 
 # ----------------------
@@ -85,6 +86,7 @@ class StudentGuardian(models.Model):
 # ----------------------
 class Instructor(models.Model):
     instructor_id = models.UUIDField(primary_key = True, default = uuid.uuid4, editable = False)
+    user = models.OneToOneField(User,on_delete=models.CASCADE,related_name='instructor_profile',null=True,blank=True)
     first_name = models.CharField(max_length=100)
     middle_name = models.CharField(max_length=50)
     last_name = models.CharField(max_length=100)

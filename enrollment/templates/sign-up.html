@@ -33,31 +33,47 @@
       <span class="mask bg-gradient-dark opacity-6"></span>
       <div class="container">
         <div class="row justify-content-center">
-          <div class="col-lg-5 text-center mx-auto">
-            <h1 class="text-white mb-2 mt-5">Welcome!</h1>
-            <p class="text-lead text-white">Education isn’t just about learning facts—it’s about learning how to think, grow, and understand the world with clarity and purpose.</p>
+          <div class="col-lg-12 text-center mx-auto">
+          <p class="text-white mb-2 mt-5">Welcome!</p>
+            <h1 class="text-lead text-white">ROALNDO R. ANDAYA SR. MEMORIAL HIGH SCHOOL</h1>
           </div>
         </div>
       </div>
     </div>
     <div class="container">
       <div class="row mt-lg-n10 mt-md-n11 mt-n10 justify-content-center">
-        <div class="col-xl-4 col-lg-5 col-md-7 mx-auto">
+        <div class="col-xl-12 col-lg-12 col-md-12 mx-auto">
           <div class="card z-index-0">
             <div class="card-header text-center pt-4">
-              <h5>Register with</h5>
+              <h5> Teacher Account Registration</h5>
             </div>
             <div class="card-body">
               <form method="POST" action="{% url 'registration' %}">
                 {% csrf_token %}
                 <div class="mb-3">
-                  <input type="text" name="username" class="form-control" placeholder="Name" aria-label="Name">
+                  <label >Username</label>
+                  <input type="text" name="username" class="form-control" placeholder="Userame" aria-label="Name">
                 </div>
                 <div class="mb-3">
+                      <label >Email</label>
                   <input type="email" name="email" class="form-control" placeholder="Email" aria-label="Email">
                 </div>
                 <div class="mb-3">
+                      <label >Psssword</label>
                   <input type="password"  minlength="6" name="password" class="form-control" placeholder="Password" aria-label="Password">
+                </div>
+
+               <div class="card-header text-center pt-4">
+              <h5> Teacher's Personal Information</h5>
+            </div>
+                <div class="mb-3">
+                      {% if form.errors %}
+                    <div class="alert alert-danger">
+                      {{ form.errors }}
+                    </div>
+                  {% endif %}
+                  
+                  {{ form.as_p }}
                 </div>
                 <div class="form-check form-check-info text-start">
                   <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault" required>
