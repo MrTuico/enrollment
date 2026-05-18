@@ -14,6 +14,7 @@ class StudentForm(forms.ModelForm):
     class Meta:
         model = Student
         fields = [
+            'lrn_no',
             'first_name',
             'middle_name',
             'last_name',
@@ -29,6 +30,7 @@ class StudentForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
 
         placeholders = {
+            'lrn_no': 'LRN No.',
             'first_name': 'Enter first name',
             'middle_name': 'Enter middle name',
             'last_name': 'Enter last name',

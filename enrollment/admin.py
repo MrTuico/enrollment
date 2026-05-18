@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Course, Student, Instructor, Subject, Section, Schedule, Enrollment,GradeLevel
+from .models import Course, Student, Instructor, Subject, Section, Schedule, Enrollment,GradeLevel, Attendance
 
 
 # ----------------------
@@ -79,3 +79,7 @@ class EnrollmentAdmin(admin.ModelAdmin):
 @admin.register(GradeLevel)
 class GradeLevelAdmin(admin.ModelAdmin):
     list_display = ('grade_id','grade_no')
+
+@admin.register(Attendance)
+class AttendanceAdmin(admin.ModelAdmin):
+    list_display = ('student','section')

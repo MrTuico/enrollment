@@ -5,17 +5,21 @@
 <!-- Students Table -->
 <div class="row">
   <div class="col-12">
-    <form action="{% url 'enrollment_create' %}" method="post">
-       {% csrf_token %}
     <div class="card mb-4">
       <div class="card-header pb-0">
         <h6>List of Enrollee Students</h6>
       </div>
+          <div class="m-3 text-end">
+             <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#rollCallModal">
+                Start Roll Call
+              </button>
+            </div>
       <div class="card-body px-0 pt-0 pb-2">
         <div class="table-responsive p-0">
           <table class="table align-items-center mb-0">
             <thead>
               <tr>
+                <th>No.</th>
                 <th>Fullname</th>
                 <th>Gender</th>
                 <th>Age</th>
@@ -27,6 +31,7 @@
               
             {% for i in students %}
                   <tr>
+                    <td>{{ forloop.counter }}</td>
                     <td>{{ i.student.last_name }}, {{ i.student.first_name }} {{ i.student.middle_name }} {{ i.student.ext_name }}</td>
                     <td>{{ i.student.gender }}</td>
                     <td>{{ i.student.age }}</td>
@@ -50,7 +55,73 @@
     </div>
   </div>
 </div>
+
+
+{{ students_data|json_script:"students-data" }}
+
+<form id="csrf-form">
+    {% csrf_token %}
 </form>
+<div class="modal fade" id="rollCallModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title">Roll Call Attendance</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body text-center">
+
+        <h4 id="modal-name"></h4>
+        <p id="modal-grade"></p>
+        <p><strong>Gender:</strong> <span id="modal-gender"></span></p>
+        <p><strong>Age:</strong> <span id="modal-age"></span></p>
+
+           <hr>
+
+        <div class="mb-3">
+          <label class="form-label"><strong>Session</strong></label>
+          <div class="d-flex justify-content-center gap-4">
+
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="session-am" value="AM">
+              <label class="form-check-label" for="session-am">
+                AM
+              </label>
+            </div>
+
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="session-pm" value="PM">
+              <label class="form-check-label" for="session-pm">
+                PM
+              </label>
+            </div>
+
+          </div>
+        </div>
+
+        <hr>
+        <select id="attendance-status" class="form-control text-center">
+            <option value="P" >Present</option>
+            <option value="A">Absent</option>
+            <option value="L">Late</option>
+            <option value="E">Excused</option>
+        </select>
+
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-success" id="save-btn">Save</button>
+        <button class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+
 <!-- jQuery first -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
@@ -58,9 +129,150 @@
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
-document.getElementById("select_all").addEventListener("change", function() {
-    let checkboxes = document.querySelectorAll(".row_checkbox");
-    checkboxes.forEach(cb => cb.checked = this.checked);
+let students = JSON.parse(document.getElementById('students-data').textContent);
+
+let currentIndex = 0;
+let attendance = {}; 
+
+// ✅ SHOW STUDENT
+function showStudent(index) {
+    let s = students[index];
+
+    document.getElementById('modal-name').innerText =
+        (index + 1)+ ". " + s.last_name + ", " + s.first_name;
+
+    document.getElementById('modal-gender').innerText = s.gender;
+    document.getElementById('modal-age').innerText = s.age;
+    document.getElementById('modal-grade').innerText =
+        "Grade " + s.grade_no + " - " + s.section_name;
+
+    // ✅ LOAD EXISTING STATUS
+    let existing = attendance[s.id] || {am: null, pm: null};
+
+    if (existing.am) {
+        document.getElementById('attendance-status').value = existing.am;
+        $("#session-am").prop("checked", true);
+    }
+
+    if (existing.pm) {
+        document.getElementById('attendance-status').value = existing.pm;
+        $("#session-pm").prop("checked", true);
+    }
+
+    if (!existing.am && !existing.pm) {
+        document.getElementById('attendance-status').value = "P";
+    }
+}
+
+// ✅ AUTO SAVE (AJAX PER STUDENT)
+function saveCurrent() {
+    let s = students[currentIndex];
+
+    let status = document.getElementById('attendance-status').value;
+
+    let amChecked = $("#session-am").is(":checked");
+    let pmChecked = $("#session-pm").is(":checked");
+
+    let am = amChecked ? status : null;
+    let pm = pmChecked ? status : null;
+
+    // store locally
+    attendance[s.id] = {am: am, pm: pm};
+
+    // ✅ AJAX SAVE
+    $.ajax({
+        url: "{% url 'save_attendance' %}",
+        type: "POST",
+        contentType: "application/json",
+        data: JSON.stringify({
+            student_id: s.id,
+            section_id: "{{ request.resolver_match.kwargs.sec_id }}",
+            am_status: am,
+            pm_status: pm
+        }),
+        headers: {
+            "X-CSRFToken": getCSRFToken()
+        }
+    });
+}
+
+// ✅ NAVIGATION
+function nextStudent() {
+    saveCurrent();
+    if (currentIndex < students.length - 1) {
+        currentIndex++;
+        showStudent(currentIndex);
+    }
+}
+
+function prevStudent() {
+    saveCurrent();
+    if (currentIndex > 0) {
+        currentIndex--;
+        showStudent(currentIndex);
+    }
+}
+
+// ✅ KEYBOARD SHORTCUTS
+document.addEventListener('keydown', function(e) {
+    if (!$('#rollCallModal').hasClass('show')) return;
+
+    // 👉 NAVIGATION ONLY
+    if (e.key === "ArrowRight") {
+        nextStudent();
+    }
+
+    if (e.key === "ArrowLeft") {
+        prevStudent();
+    }
+
+    // 👉 QUICK SELECT STATUS (NO AUTO NEXT)
+    if (["p","a","l","e"].includes(e.key.toLowerCase())) {
+        let map = {p:"P", a:"A", l:"L", e:"E"};
+        $("#attendance-status").val(map[e.key.toLowerCase()]);
+    }
+
+    // 👉 ENTER = SAVE
+    if (e.key === "Enter") {
+        e.preventDefault();
+
+        saveCurrent();
+
+        // ✅ SUCCESS ALERT
+        alert("✅ Attendance saved for this student");
+
+        // OPTIONAL: move next after save
+        nextStudent();
+    }
 });
+
+// ✅ LOAD EXISTING ATTENDANCE WHEN MODAL OPENS
+$('#rollCallModal').on('shown.bs.modal', function () {
+
+    currentIndex = 0;
+
+    // AUTO SESSION
+    const hour = new Date().getHours();
+    $("#session-am").prop("checked", hour < 12);
+    $("#session-pm").prop("checked", hour >= 12);
+
+    // LOAD FROM SERVER
+    $.ajax({
+        url: "{% url 'get_attendance' %}",
+        type: "GET",
+        data: {
+            section_id: "{{ request.resolver_match.kwargs.sec_id }}"
+        },
+        success: function(data) {
+            attendance = data;  // preload existing
+            showStudent(currentIndex);
+        }
+    });
+});
+
+// ✅ CSRF
+function getCSRFToken() {
+    return document.querySelector('[name=csrfmiddlewaretoken]').value;
+}
 </script>
 {% endblock %}

@@ -21,7 +21,7 @@ def student_view(request):
             school_year = request.POST.get('school_year')
             form = StudentForm(request.POST)
             if form.is_valid():
-                
+                lrn_no = form.cleaned_data['lrn_no']
                 first_name = form.cleaned_data['first_name']
                 middle_name = form.cleaned_data['middle_name']
                 last_name = form.cleaned_data['last_name']
@@ -29,6 +29,7 @@ def student_view(request):
                 date_of_birth = form.cleaned_data['date_of_birth']  # adjust if you have DOB field
 
                 existing_student = Student.objects.filter(
+                    lrn_no = lrn_no,
                     first_name=first_name,
                     last_name=last_name,
                     middle_name=middle_name,

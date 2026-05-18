@@ -35,6 +35,7 @@ GENDER_CHOICES = [
     ]
 class Student(models.Model):
     student_id = models.UUIDField(primary_key = True, default = uuid.uuid4, editable = False)
+    lrn_no = models.CharField(max_length=50,unique=True, blank=True, null=True)
     first_name = models.CharField(max_length=100)
     middle_name = models.CharField(max_length=50)
     last_name = models.CharField(max_length=100)
@@ -42,8 +43,8 @@ class Student(models.Model):
     date_of_birth = models.DateField()
     gender = models.CharField(max_length=1, choices=GENDER_CHOICES)
     address = models.TextField()
-    contact_number = models.CharField(max_length=20,unique=True,blank=True)
-    email = models.EmailField(unique=True,blank=True,null=True)
+    contact_number = models.CharField(max_length=20,default=0,blank=True)
+    email = models.EmailField(blank=True,null=True)
 
     class Meta:
         constraints = [
@@ -195,24 +196,28 @@ class Schedule(models.Model):
         return f"{self.section} ({self.day} {self.time_start}-{self.time_end})"
 
 
-# class Attendance(models.Model):
-#     STATUS_CHOICES = [
-#         ('P', 'Present'),
-#         ('A', 'Absent'),
-#         ('L', 'Late'),
-#         ('E', 'Excused'),
-#     ]
-#     student = models.ForeignKey(Student, on_delete=models.CASCADE)
-#     section = models.ForeignKey(Section, on_delete=models.CASCADE)
-#     date = models.DateField()
-#     status = models.CharField(max_length=1, choices=STATUS_CHOICES)
-#     remarks = models.TextField(blank=True, null=True)
+class Attendance(models.Model):
+    STATUS_CHOICES = [
+        ('P', 'Present'),
+        ('A', 'Absent'),
+        ('L', 'Late'),
+        ('E', 'Excused'),
+    ]
 
-#     class Meta:
-#         unique_together = ('student', 'section', 'date')  # prevent duplicate records for the same day
 
-#     def __str__(self):
-#         return f"{self.date} - {self.student} - {self.status}"
+    student = models.ForeignKey(Student, on_delete=models.CASCADE)
+    section = models.ForeignKey(Section, on_delete=models.CASCADE)
+    date = models.DateField()
+    am_status = models.CharField(max_length=1, choices=STATUS_CHOICES,blank=True, null=True)
+    pm_status = models.CharField(max_length=1, choices=STATUS_CHOICES,blank=True, null=True)
+    remarks = models.TextField(blank=True, null=True)
+   
+
+    class Meta:
+        unique_together = ('student', 'section', 'date')
+
+    def __str__(self):
+        return f"{self.date} - {self.student} - AM:{self.am_status} PM:{self.pm_status}"
 
     
 
