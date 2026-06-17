@@ -54,3 +54,9 @@ def student_view(request):
     else:
         form = StudentForm()
     return render(request, "enrollment/student/student.html", {'form': form,'students': students,'year_choices': year_choices})
+
+
+@login_required(login_url='login') 
+def student_profile(request, s_id):
+    s = Student.objects.get(student_id=s_id) 
+    return render(request, "enrollment/student/student_profile.html",{'s':s})

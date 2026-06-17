@@ -4,14 +4,15 @@
 <head>
  {% include 'includes/header_scripts.html' %}
 </head>
-{% if messages %}
+
+<body class="g-sidenav-show   bg-gray-100">
+  {% if messages %}
   {% for message in messages %}
     <div class="alert alert-{{ message.tags|default:'success' }}" style="z-index: 999999;" id="alert-{{ forloop.counter }}">
       {{ message }}
     </div>
   {% endfor %}
 {% endif %}
-<body class="g-sidenav-show   bg-gray-100">
   <div class="min-height-300 bg-dark position-absolute w-100"></div>
    {% include 'includes/navigation.html' %}
   <main class="main-content position-relative border-radius-lg ">

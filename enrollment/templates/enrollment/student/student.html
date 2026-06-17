@@ -29,7 +29,7 @@
                 <th>Age</th>
                 <th>Address</th>
                 <th>Contact Number</th>
-                <th>Action</th>
+                <th>Student Profile</th>
               </tr>
             </thead>
             <tbody>
@@ -52,7 +52,7 @@
                   <td >{{ student.address }}</td>
                   <td >{{ student.contact_number }}</td>
                   <td >
-                    <a href="" class="text-secondary font-weight-bold text-xs"></a>
+                   <center><a href="{% url 'student_profile'  student.student_id %}" class="text-secondary font-weight-bold text-xs">VIEW</a></center> 
                   </td>
                 </tr>
               {% endfor %}

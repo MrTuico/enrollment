@@ -12,6 +12,7 @@ urlpatterns = [
     path('registration/', auth.registration, name='registration'),
 
     path('student_view/', student.student_view, name='student_view'),
+    path('<str:s_id>/student_profile/', student.student_profile, name='student_profile'),
 
     path('enrollment_create/', enrollment.enrollment_create, name='enrollment_create'),
     
